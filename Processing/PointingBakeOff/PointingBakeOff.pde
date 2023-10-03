@@ -20,6 +20,10 @@ Robot robot; //initialized in setup
 
 int numRepeats = 1; //sets the number of times each button repeats in the test
 boolean darkMode = true; // Assuming it starts in dark mode
+// Additional variables for the timer
+int gameStartTime = 0; // The time when the game actually starts
+boolean gameStarted = false; // Flag to know when the game starts
+
 
 
 void setup()
@@ -63,6 +67,7 @@ void draw()
   }
   
   drawToggle(); 
+  displayScoreboardAndTimer();
   if (trialNum >= trials.size()) //check to see if test is over
   {
     float timeTaken = (finishTime-startTime) / 1000f;
@@ -95,6 +100,10 @@ void draw()
 
 void mousePressed() // test to see if hit was in target!
 {
+   if (!gameStarted) { // If the game hasn't started yet, start the timer
+    gameStartTime = millis();
+    gameStarted = true;
+  }
   // Check if the click is in the area of the "Toggle Mode" text
   if (mouseX >= width - 150 && mouseX <= width - 50 && mouseY >= 10 && mouseY <= 50) {
     darkMode = !darkMode;
@@ -177,6 +186,29 @@ void drawToggle() {
   }
   text("Toggle Light/Dark Mode", width - 100, 30); // Placing it towards the top right
 }
+
+void displayScoreboardAndTimer() {
+    // Displaying the timer and scoreboard on the upper left corner but slightly right and down
+    if (darkMode) {
+        fill(255); // White text for dark mode
+    } else {
+        fill(0); // Black text for light mode
+    }
+    
+    // Calculate elapsed time since game start
+    int elapsedTime = millis() - gameStartTime;
+
+    // Adjusted X and Y coordinates to shift the display right and down
+    int xOffset = 50; // Adjust this value to move more to the right
+    int yOffset = 50; // Adjust this value to move more down
+
+    // Display hits, misses and timer with the adjusted coordinates
+    text("Hits: " + hits, 10 + xOffset, 20 + yOffset);
+    text("Misses: " + misses, 10 + xOffset, 40 + yOffset);
+    text("Time: " + nf(elapsedTime / 1000.0, 0, 2) + "s", 10 + xOffset, 60 + yOffset);
+}
+
+
 
 void mouseMoved()
 {

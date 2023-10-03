@@ -19,6 +19,8 @@ int misses = 0; //number of missed clicks
 Robot robot; //initialized in setup 
 
 int numRepeats = 1; //sets the number of times each button repeats in the test
+boolean darkMode = true; // Assuming it starts in dark mode
+
 
 void setup()
 {
@@ -54,8 +56,13 @@ void setup()
 
 void draw()
 {
-  background(0); //set background to black
-
+  if (darkMode) {
+    background(30); // Darker background
+  } else {
+    background(255); // White background for light mode
+  }
+  
+  drawToggle(); 
   if (trialNum >= trials.size()) //check to see if test is over
   {
     float timeTaken = (finishTime-startTime) / 1000f;
@@ -71,8 +78,12 @@ void draw()
     text("Average time for each button + penalty: " + nf(((timeTaken)/(float)(hits+misses) + penalty),0,3) + " sec", width / 2, height / 2 + 140);
     return; //return, nothing else to do now test is over
   }
-
-  fill(255); //set fill color to white
+  
+  if (darkMode) {
+    fill(0, 255, 255); // Cyan target for dark mode
+  } else {
+    fill(255, 0, 0); // Red target for light mode
+  }
   text((trialNum + 1) + " of " + trials.size(), 40, 20); //display what trial the user is on
 
   for (int i = 0; i < 16; i++)// for all button
@@ -84,6 +95,12 @@ void draw()
 
 void mousePressed() // test to see if hit was in target!
 {
+  // Check if the click is in the area of the "Toggle Mode" text
+  if (mouseX >= width - 150 && mouseX <= width - 50 && mouseY >= 10 && mouseY <= 50) {
+    darkMode = !darkMode;
+    return;
+  }
+  
   if (trialNum >= trials.size()) //if task is over, just return
     return;
 
@@ -130,12 +147,35 @@ void drawButton(int i)
 {
   Rectangle bounds = getButtonLocation(i);
 
-  if (trials.get(trialNum) == i) // see if current button is the target
-    fill(0, 255, 255); // if so, fill cyan
-  else
-    fill(200); // if not, fill gray
+  //if (trials.get(trialNum) == i) // see if current button is the target
+  //  fill(0, 255, 255); // if so, fill cyan
+  //else
+  //  fill(200); // if not, fill gray
+  
+  
+  if (trials.get(trialNum) == i) {
+    if (darkMode) {
+      fill(0, 255, 255); // Cyan target for dark mode
+    } else {
+      fill(255, 0, 0); // Red target for light mode
+    }
+  } else {
+    if (darkMode) {
+      fill(60); // Slightly lighter gray in dark mode
+    } else {
+      fill(200); // Standard gray in light mode
+    }
+  }
 
   rect(bounds.x, bounds.y, bounds.width, bounds.height); //draw button
+}
+void drawToggle() {
+  if (darkMode) {
+    fill(255); // White text in dark mode
+  } else {
+    fill(0); // Black text in light mode
+  }
+  text("Toggle Light/Dark Mode", width - 100, 30); // Placing it towards the top right
 }
 
 void mouseMoved()

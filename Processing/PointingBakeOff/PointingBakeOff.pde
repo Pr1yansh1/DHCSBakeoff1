@@ -4,6 +4,10 @@ import java.awt.Robot;
 import java.util.ArrayList;
 import java.util.Collections;
 import processing.core.PApplet;
+import processing.sound.*;
+
+SoundFile hit_sound;
+SoundFile miss_sound;
 
 //when in doubt, consult the Processsing reference: https://processing.org/reference/
 
@@ -23,6 +27,7 @@ boolean darkMode = true; // Assuming it starts in dark mode
 // Additional variables for the timer
 int gameStartTime = 0; // The time when the game actually starts
 boolean gameStarted = false; // Flag to know when the game starts
+String localDir = System.getProperty("user.dir");
 
 
 
@@ -55,6 +60,10 @@ void setup()
   System.out.println("trial order: " + trials);
   
   surface.setLocation(0,0);// put window in top left corner of screen (doesn't always work)
+  
+  // Modify File Paths when running on your machine
+  hit_sound = new SoundFile(this, "/Users/Gbenu/05391/DHCSBakeoff1/Processing/PointingBakeOff/positive_click.wav");
+  miss_sound = new SoundFile(this, "/Users/Gbenu/05391/DHCSBakeoff1/Processing/PointingBakeOff/negative_click.wav");
 }
 
 
@@ -130,11 +139,14 @@ void mousePressed() // test to see if hit was in target!
   {
     System.out.println("HIT! " + trialNum + " " + (millis() - startTime)); // success
     hits++; 
+    hit_sound.play();
   } 
   else
   {
     System.out.println("MISSED! " + trialNum + " " + (millis() - startTime)); // fail
     misses++;
+    println(localDir);
+    miss_sound.play();
   }
 
   trialNum++; //Increment trial number
@@ -165,8 +177,10 @@ void drawButton(int i)
   if (trials.get(trialNum) == i) {
     if (darkMode) {
       fill(0, 255, 255); // Cyan target for dark mode
+      stroke(255, 0, 0); // make the border of the target square red
     } else {
       fill(255, 0, 0); // Red target for light mode
+      stroke(0, 255, 0); // make the border of the target square green (in light mode)
     }
   } else {
     if (darkMode) {
@@ -207,8 +221,6 @@ void displayScoreboardAndTimer() {
     text("Misses: " + misses, 10 + xOffset, 40 + yOffset);
     text("Time: " + nf(elapsedTime / 1000.0, 0, 2) + "s", 10 + xOffset, 60 + yOffset);
 }
-
-
 
 void mouseMoved()
 {

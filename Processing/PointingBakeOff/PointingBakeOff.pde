@@ -20,6 +20,7 @@ int startTime = 0; // time starts when the first click is captured
 int finishTime = 0; //records the time of the final click
 int hits = 0; //number of successful clicks
 int misses = 0; //number of missed clicks
+int hit_streak = 0;
 Robot robot; //initialized in setup 
 
 int numRepeats = 1; //sets the number of times each button repeats in the test
@@ -28,6 +29,9 @@ boolean darkMode = true; // Assuming it starts in dark mode
 int gameStartTime = 0; // The time when the game actually starts
 boolean gameStarted = false; // Flag to know when the game starts
 String localDir = System.getProperty("user.dir");
+boolean gameFinished = false;
+float elapsedTime;
+float timeTaken;
 
 
 
@@ -61,11 +65,10 @@ void setup()
   
   surface.setLocation(0,0);// put window in top left corner of screen (doesn't always work)
   
-  // Modify File Paths when running on your machine
+  // Modify File Path when running on your own machine
   hit_sound = new SoundFile(this, "/Users/Gbenu/05391/DHCSBakeoff1/Processing/PointingBakeOff/positive_click.wav");
   miss_sound = new SoundFile(this, "/Users/Gbenu/05391/DHCSBakeoff1/Processing/PointingBakeOff/negative_click.wav");
 }
-
 
 void draw()
 {
@@ -79,9 +82,15 @@ void draw()
   displayScoreboardAndTimer();
   if (trialNum >= trials.size()) //check to see if test is over
   {
-    float timeTaken = (finishTime-startTime) / 1000f;
+    gameFinished = true;
+    timeTaken = (finishTime-startTime) / 1000f;
     float penalty = constrain(((95f-((float)hits*100f/(float)(hits+misses)))*.2f),0,100);
-    fill(255); //set fill color to white
+    if (darkMode){
+      fill(255); //set fill color to white
+    }
+    else{
+      fill(0);
+    }
     //write to screen (not console)
     text("Finished!", width / 2, height / 2); 
     text("Hits: " + hits, width / 2, height / 2 + 20);
@@ -90,6 +99,7 @@ void draw()
     text("Total time taken: " + timeTaken + " sec", width / 2, height / 2 + 80);
     text("Average time for each button: " + nf((timeTaken)/(float)(hits+misses),0,3) + " sec", width / 2, height / 2 + 100);
     text("Average time for each button + penalty: " + nf(((timeTaken)/(float)(hits+misses) + penalty),0,3) + " sec", width / 2, height / 2 + 140);
+    text("Press 'r' to restart!", width/2, height/2 + 200);
     return; //return, nothing else to do now test is over
   }
   
@@ -139,12 +149,14 @@ void mousePressed() // test to see if hit was in target!
   {
     System.out.println("HIT! " + trialNum + " " + (millis() - startTime)); // success
     hits++; 
+    hit_streak++;
     hit_sound.play();
   } 
   else
   {
     System.out.println("MISSED! " + trialNum + " " + (millis() - startTime)); // fail
     misses++;
+    hit_streak = 0;
     println(localDir);
     miss_sound.play();
   }
@@ -210,7 +222,9 @@ void displayScoreboardAndTimer() {
     }
     
     // Calculate elapsed time since game start
-    int elapsedTime = millis() - gameStartTime;
+    if (gameStarted && !gameFinished){
+      elapsedTime = millis() - gameStartTime;
+    }
 
     // Adjusted X and Y coordinates to shift the display right and down
     int xOffset = 50; // Adjust this value to move more to the right
@@ -220,6 +234,21 @@ void displayScoreboardAndTimer() {
     text("Hits: " + hits, 10 + xOffset, 20 + yOffset);
     text("Misses: " + misses, 10 + xOffset, 40 + yOffset);
     text("Time: " + nf(elapsedTime / 1000.0, 0, 2) + "s", 10 + xOffset, 60 + yOffset);
+    text("Hits_streak: " + hit_streak, 10 + xOffset, 80 + yOffset);
+}
+
+void reset(){
+  trialNum = 0;
+  startTime = 0;
+  finishTime = 0;
+  hits = 0;
+  misses = 0;
+  hit_streak = 0;
+  gameStartTime = 0;
+  gameStarted = false;
+  gameFinished = false;
+  elapsedTime = 0.0;
+  trials = new ArrayList<Integer>();
 }
 
 void mouseMoved()
@@ -239,4 +268,10 @@ void keyPressed()
   //can use the keyboard if you wish
   //https://processing.org/reference/keyTyped_.html
   //https://processing.org/reference/keyCode.html
+  if ((key == 'r' || key == 'R') && gameFinished){
+    reset();
+    setup();
+    draw();
+  }
+    
 }
